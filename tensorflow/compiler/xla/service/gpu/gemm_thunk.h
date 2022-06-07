@@ -51,7 +51,9 @@ class GemmThunk : public Thunk {
   const BufferAllocation::Slice rhs_buffer_;
   const BufferAllocation::Slice output_buffer_;
 #if GOOGLE_CUDA
-  std::optional<se::cuda::BlasLt::MatmulPlan> matmul_plan_;
+  std::optional<
+      std::pair<cublas_lt::MatmulPlan, se::cuda::BlasLt::MatmulAlgorithm>>
+      matmul_plan_and_algorithm_;
 #endif  // GOOGLE_CUDA
 };
 
