@@ -15,6 +15,7 @@ limitations under the License.
 
 #include "tensorflow/compiler/xla/service/gpu/gemm_rewriter.h"
 
+#include <memory>
 #include <utility>
 
 #include "tensorflow/compiler/xla/service/dfs_hlo_visitor_with_default.h"
@@ -125,9 +126,14 @@ class GemmRewriterVisitor : public DfsHloRewriteVisitor {
       CHECK(!lhs->IsRank2Transpose());
       CHECK(!rhs->IsRank2Transpose());
       const Shape &output_shape = instr->shape();
+
+      const char *const target =
+          instr->GetModule()->config().debug_options().xla_gpu_enable_cublaslt()
+              ? kCublasLtMatmulCallTarget
+              : kGemmCallTarget;
+
       std::unique_ptr<HloInstruction> gemm_call =
-          HloInstruction::CreateCustomCall(output_shape, {lhs, rhs},
-                                           kGemmCallTarget);
+          HloInstruction::CreateCustomCall(output_shape, {lhs, rhs}, target);
       GemmBackendConfig gemm_config;
       gemm_config.set_alpha_real(1.0);
       gemm_config.set_alpha_imag(0.0);
